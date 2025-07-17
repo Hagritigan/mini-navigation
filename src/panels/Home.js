@@ -323,10 +323,6 @@ export const Home = ({ id, fetchedUser }) => {
 
   const fourSeasMobile = mainLocations[0].ways.map((sea) => 
     <div key={sea.title}>
-      {/* <div className="seaTitle">{sea.title}</div>
-      <div style={{display: 'flex', flexDirection: 'column'}}>
-        {sea.islands.map((island) => <a className="islandCard" key={island.title} href={island.link} target="_blank">{island.title}</a> )}
-      </div> */}
       <Accordion open>
         <Accordion.Summary>
           <div className="seaTitle" style={{fontSize: '24px', textAlign: 'center', justifyContent: 'center !important'}}>{sea.title}</div>
@@ -372,6 +368,20 @@ export const Home = ({ id, fetchedUser }) => {
     </div>
   )
 
+  const grandLineMobile = mainLocations[2].ways.map((way) => 
+    <div key={way.title}>
+      <Accordion open>
+        <Accordion.Summary>
+          <div className="seaTitle" style={{fontSize: '24px', textAlign: 'center', justifyContent: 'center !important'}}>{way.title}</div>
+        </Accordion.Summary>
+        <Accordion.Content>
+          <div style={{display: 'flex', flexDirection: 'column'}}>
+            {way.islands.map((island) => <a className="islandCard" key={island.title} href={island.link} target="_blank">{island.title}</a> )}
+          </div>
+        </Accordion.Content>
+      </Accordion>
+    </div>
+  )
   return (
     <Panel id={id}>
       <Group>
@@ -399,15 +409,29 @@ export const Home = ({ id, fetchedUser }) => {
             <div className='capeHeader'><div className='fourSeasHeaderText cape'>{mainLocations[1].title}</div></div>
           </a>
           <img className='blueBorder' src="blue-border.jpg" alt="grandLine" />
-          <div className='grandLineHeader'><div className='fourSeasHeaderText heaven'>{mainLocations[2].title}</div></div> 
-          {grandLineTitleFirstHalf}
-          <div className="fourSeasGrid">
-            {firstHalf}
+          <div className="grandLineHeader">
+            <div className="fourSeasHeaderText heaven">{mainLocations[2].title}</div>
           </div>
-          {grandLineTitleSecondHalf}
+          <div className="destop-only"> 
+            {grandLineTitleFirstHalf}
+          </div>
+          
+          {/* <div className="fourSeasGrid"> */}
+          <div className="destop-only">
+            <div className="fourSeasGrid">
+              {firstHalf}
+            </div>
+          </div>
+          <div className="mobile-only">
+            {grandLineMobile}
+          </div>
           <div className="blue-line"></div>
-          <div className="fourSeasGrid secondHalf">
-            {secondHalf}
+          <div className="destop-only">
+            {grandLineTitleSecondHalf}
+            <div className="blue-line"></div>
+            <div className="fourSeasGrid secondHalf">
+              {secondHalf}
+            </div>
           </div>
           <div className="purple-line"></div>
         </Div>
