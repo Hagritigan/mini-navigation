@@ -1,4 +1,5 @@
-import { Panel, PanelHeader, Header, Button, Group, Cell, Div, Avatar, Accordion } from '@vkontakte/vkui';
+import { useState } from 'react';
+import { Panel, PanelHeader, Header, Button, Group, Cell, Div, Avatar, Accordion, ModalCard, ModalRoot } from '@vkontakte/vkui';
 import { useRouteNavigator } from '@vkontakte/vk-mini-apps-router';
 
 import '/public/App.css'
@@ -295,14 +296,55 @@ const mainLocations = [
           {"title": "Кхонхо Лэнд", "link": "https://vk.com/topic-36291248_53206530"},
           {"title": "Магмадор", "link": "https://vk.com/topic-36291248_53662652"}
         ]
+      },
+      {
+        "title": "Особые локации",
+        "islands": [
+          {"title": "Архипелаг Альферац", "link": "https://vk.com/topic-36291248_40449644"},
+          {"title": "Сабаоди", "link": "https://vk.com/page-36291248_49183470"},
+          {"title": "Гран Тесоро", "link": "https://vk.com/topic-36291248_35046384"},
+          {"title": "Юн", "link": "https://vk.com/topic-36291248_32959598"},
+          {"title": "Пожиратель Кораблей", "link": "https://vk.com/topic-36291248_32959589"},
+          {"title": "Футоши", "link": "https://vk.com/topic-36291248_33993064"},
+          {"title": "Ржавый месяц", "link": "https://vk.com/topic-36291248_53662681"},
+          {"title": "Маринфорд", "link": "https://vk.com/topic-36291248_32959573"},
+          {"title": "Импел Даун", "link": "https://vk.com/topic-36291248_32959578"},
+          {"title": "Эниес Лобби", "link": "https://vk.com/topic-36291248_32959576"},
+          {"title": "Остров Крепость Сайфер Пола", "link": "https://vk.com/topic-36291248_39242261"},
+          {"title": "Базы Морского Дозора", "modal": true, "childrens": [
+            {"title": "Вест-Блю: Штаб Дозора", "link": "https://vk.com/topic-36291248_35937206"},
+            {"title": "Ист-Блю: Штаб Дозора", "link": "https://vk.com/topic-36291248_35937237"},
+            {"title": "Норд-Блю: Штаб Дозора", "link": "https://vk.com/topic-36291248_35937262"},
+            {"title": "Саус-Блю: Штаб Дозора", "link": "https://vk.com/topic-36291248_35937291"},
+            {"title": "G-2", "link": "https://vk.com/topic-36291248_35937331"},
+            {"title": "G-3", "link": "https://vk.com/topic-36291248_35937348"},
+            {"title": "G-4", "link": "https://vk.com/topic-36291248_35937368"},
+            {"title": "Мариджоа", "link": "https://vk.com/topic-36291248_35937376"},
+          ]},
+          {"title": "Локации Революционной Армии", "modal": true, "childrens": [
+            {"title": "Гранд Лайн о. Момоиро База РА", "link": "https://vk.com/topic-36291248_38515909"},
+            {"title": "Гранд Лайн о. Балтиго База РА", "link": "https://vk.com/topic-36291248_31714605"},
+            {"title": "Штаб Революционной Армии в Вест Блю", "link": "https://vk.com/topic-36291248_35530028"},
+            {"title": "Штаб Революционной Армии в Саут Блю", "link": "https://vk.com/topic-36291248_35530049"},
+            {"title": "Штаб Революционной Армии в Ист Блю ", "link": "https://vk.com/topic-36291248_35530114"},
+            {"title": "Штаб Революционной Армии в Норд Блю", "link": "https://vk.com/topic-36291248_35530023"},
+          ]},
+
+        ]
       }
     ],
   }
 ]
 
-export const Home = ({ id, fetchedUser }) => {
-  const routeNavigator = useRouteNavigator();
 
+
+export const Home = ({ id, fetchedUser }) => {
+
+  const routeNavigator = useRouteNavigator();
+  const [currentSea, setCurrentSea] = useState(null);
+  const [currentWay, setCurrentWay] = useState(null);
+  const [activeModal, setActiveModal] = useState(null);
+  const [currentIsland, setCurrentIsland] = useState(null);
   console.log(mainLocations[0].ways[0]);
 
   const seaTitle = (
@@ -322,17 +364,17 @@ export const Home = ({ id, fetchedUser }) => {
   );
 
   const fourSeasMobile = mainLocations[0].ways.map((sea) => 
-    <div key={sea.title}>
-      <Accordion open>
-        <Accordion.Summary>
-          <div className="seaTitle" style={{fontSize: '24px', textAlign: 'center', justifyContent: 'center !important'}}>{sea.title}</div>
-        </Accordion.Summary>
-        <Accordion.Content>
-          <div style={{display: 'flex', flexDirection: 'column'}}>
-            {sea.islands.map((island) => <a className="islandCard" key={island.title} href={island.link} target="_blank">{island.title}</a> )}
-          </div>
-        </Accordion.Content>
-      </Accordion>
+    <div key={sea.title} className={`mobileSea ${currentSea?.title === sea.title ? 'mobileSeaActive' : ''}`}>
+      <div className="seaTitle" 
+        style={{fontSize: '24px', textAlign: 'center', justifyContent: 'center !important'}}
+        onClick={() => {
+          if (currentSea?.title === sea.title) {
+            setCurrentSea(null);
+          } else {
+            setCurrentSea(sea);
+          }
+        }}
+      >{sea.title}</div>
     </div>
   );
 
@@ -369,19 +411,27 @@ export const Home = ({ id, fetchedUser }) => {
   )
 
   const grandLineMobile = mainLocations[2].ways.map((way) => 
-    <div key={way.title}>
-      <Accordion open>
-        <Accordion.Summary>
-          <div className="seaTitle" style={{fontSize: '24px', textAlign: 'center', justifyContent: 'center !important'}}>{way.title}</div>
-        </Accordion.Summary>
-        <Accordion.Content>
-          <div style={{display: 'flex', flexDirection: 'column'}}>
-            {way.islands.map((island) => <a className="islandCard" key={island.title} href={island.link} target="_blank">{island.title}</a> )}
-          </div>
-        </Accordion.Content>
-      </Accordion>
+    <div key={way.title} className={`mobileSea ${currentWay?.title === way.title ? 'mobileSeaActive' : ''}`}>
+      <div className="seaTitle" 
+        style={{fontSize: '24px', textAlign: 'center', justifyContent: 'center !important'}}
+        onClick={() => {
+          console.log(way);
+          if (way.modal) {
+            console.log(way);
+            setActiveModal('way-modal');
+            setCurrentWay(way);
+          } else {
+            if (currentWay?.title === way.title) {
+              setCurrentWay(null);
+            } else {
+              setCurrentWay(way);
+            }
+          }
+        }}
+      >{way.title}</div>
     </div>
   )
+  
   return (
     <Panel id={id}>
       <Group>
@@ -393,21 +443,46 @@ export const Home = ({ id, fetchedUser }) => {
               {fourSeas}
             </div>
           </div>
-          <div className="mobile-only">
+          <div className="mobile-only mobileFourSeas">
             {fourSeasMobile}
+          </div>
+          <div className="mobile-only">
+            <div>
+              <div style={{display: 'flex', flexDirection: 'column'}}>
+                {currentSea?.islands.map((island) => 
+                  island.modal ? (
+                    <div 
+                      key={island.title} 
+                      className="islandCard" 
+                      onClick={() => {
+                        setCurrentIsland(island);
+                        setActiveModal('island-modal');
+                      }}
+                      style={{cursor: 'pointer'}}
+                    >
+                      {island.title}
+                    </div>
+                  ) : (
+                    <a className="islandCard" key={island.title} href={island.link} target="_blank">{island.title}</a>
+                  )
+                )}
+              </div>
+            </div>
           </div>
 
           {/* <div className="fourSeasFooter">
             <img src="src/assets/fourSeasFooter.png" alt="fourSeasFooter" />
           </div> */}
           <div className="reverseMountain">
-            <a className="reverseMountainButton" href="https://vk.com/topic-36291248_32959561" target="_blank" style={{textDecoration: 'none', color: 'inherit'}}>
+            <a className="reverseMountainButton" href="https://vk.com/topic-36291248_32959561" target="_blank" style={{textDecoration: 'none'}}>
               <div>Реверс Маунтин</div>
             </a>
           </div>
-          <a href="https://vk.com/topic-36291248_32959558" target="_blank" style={{textDecoration: 'none', color: 'inherit'}}>
-            <div className='capeHeader'><div className='fourSeasHeaderText cape'>{mainLocations[1].title}</div></div>
-          </a>
+          <div className="reverseMountain">
+            <a className="reverseMountainButton" href="https://vk.com/topic-36291248_32959558" target="_blank" style={{textDecoration: 'none'}}>
+              <div>{mainLocations[1].title}</div>
+            </a>
+          </div>
           <img className='blueBorder' src="blue-border.jpg" alt="grandLine" />
           <div className="grandLineHeader">
             <div className="fourSeasHeaderText heaven">{mainLocations[2].title}</div>
@@ -422,8 +497,31 @@ export const Home = ({ id, fetchedUser }) => {
               {firstHalf}
             </div>
           </div>
-          <div className="mobile-only">
+          <div className="mobile-only mobileFourSeas">
             {grandLineMobile}
+          </div>
+          <div className="mobile-only">
+            <div>
+              <div style={{display: 'flex', flexDirection: 'column'}}>
+                {currentWay?.islands.map((island) => 
+                  island.modal ? (
+                    <div 
+                      key={island.title} 
+                      className="islandCard" 
+                      onClick={() => {
+                        setCurrentIsland(island);
+                        setActiveModal('island-modal');
+                      }}
+                      style={{cursor: 'pointer'}}
+                    >
+                      {island.title}
+                    </div>
+                  ) : (
+                    <a className="islandCard" key={island.title} href={island.link} target="_blank">{island.title}</a>
+                  )
+                )}
+              </div>
+            </div>
           </div>
           <div className="blue-line"></div>
           <div className="destop-only">
@@ -436,6 +534,96 @@ export const Home = ({ id, fetchedUser }) => {
           <div className="purple-line"></div>
         </Div>
       </Group>
+      
+      <ModalRoot activeModal={activeModal} onClose={() => setActiveModal(null)}>
+        <ModalCard
+          id="sea-modal"
+          header={currentSea?.title}
+          onClose={() => setActiveModal(null)}
+        >
+          <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
+            {currentSea?.islands.map((island) => (
+              island.modal ? (
+                <div 
+                  key={island.title} 
+                  className="islandCard" 
+                  onClick={() => {
+                    setCurrentIsland(island);
+                    setActiveModal('island-modal');
+                  }}
+                  style={{cursor: 'pointer'}}
+                >
+                  {island.title}
+                </div>
+              ) : (
+                <a 
+                  className="islandCard" 
+                  key={island.title} 
+                  href={island.link} 
+                  target="_blank"
+                  style={{textDecoration: 'none', color: 'inherit'}}
+                >
+                  {island.title}
+                </a>
+              )
+            ))}
+          </div>
+        </ModalCard>
+        
+        <ModalCard
+          id="way-modal"
+          header={currentWay?.title}
+          onClose={() => setActiveModal(null)}
+        >
+          <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
+            {currentWay?.islands.map((island) => (
+              island.modal ? (
+                <div 
+                  key={island.title} 
+                  className="islandCard" 
+                  onClick={() => {
+                    setCurrentIsland(island);
+                    setActiveModal('island-modal');
+                  }}
+                  style={{cursor: 'pointer'}}
+                >
+                  {island.title}
+                </div>
+              ) : (
+                <a 
+                  className="islandCard" 
+                  key={island.title} 
+                  href={island.link} 
+                  target="_blank"
+                  style={{textDecoration: 'none', color: 'inherit'}}
+                >
+                  {island.title}
+                </a>
+              )
+            ))}
+          </div>
+        </ModalCard>
+        
+        <ModalCard
+          id="island-modal"
+          header={currentIsland?.title}
+          onClose={() => setActiveModal(null)}
+        >
+          <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
+            {currentIsland?.childrens?.map((child) => (
+              <a 
+                className="islandCard" 
+                key={child.title} 
+                href={child.link} 
+                target="_blank"
+                style={{textDecoration: 'none', color: 'inherit'}}
+              >
+                {child.title}
+              </a>
+            ))}
+          </div>
+        </ModalCard>
+      </ModalRoot>
     </Panel>
   );
 };

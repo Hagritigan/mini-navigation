@@ -136,7 +136,7 @@ body {
 
 .seaTitle {
   font-size: 34px;
-  font-weight: bold;
+  font-weight: 500;
   color: #217F86;
   text-align: center;
   margin-top: 0;
@@ -185,19 +185,19 @@ body {
 }
 
 .reverseMountain {
-    padding: 17px 19px;
+    padding: 10px;
     width: 100%;
 }
 
 .reverseMountainButton {
-    width: calc(100% - 38px);
+    width: calc(100% - 20px);
     height: 98px;
     border: 2px solid #BF1616;
     border-radius: 8px;
     font-family: 'Montserrat';
     font-size: 28px;
     font-weight: 600;
-    color: #033F58;
+    color: #217F86;
     text-align: center;
     align-items: center;
     justify-content: center;
@@ -205,7 +205,7 @@ body {
     box-shadow: 0px 4px 4px 0px #00000040;
 
     @media (max-width: 768px) {
-      font-size: 20px;
+      font-size: 24px;
       height: 56px;
     }
 }
@@ -235,5 +235,41 @@ body {
 .mobile-only {
   @media (min-width: 768px) {
     display: none;
+  }
+}
+
+.mobileSea {
+  width: 48%;
+  border: 2px solid #BF1616;
+  border-radius: 8px;
+  transition: border 0.3s ease;
+  
+}
+
+.mobileSeaActive {
+  border: 2px solid #11bd67 !important;
+}
+
+.mobileFourSeas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 10px;
+  gap: 10px;
+
+  @media (min-width: 768px) {
+    display: none;
+  }
+}
+
+.vkuiModalCard {
+  @media screen and (max-width: 768px) {
+    padding: 0 !important;
+  }
+}
+
+.vkuiModalCardBase__container {
+  @media screen and (max-width: 768px) {
+    border-radius: 16px 16px 0 0 !important;
   }
 }
