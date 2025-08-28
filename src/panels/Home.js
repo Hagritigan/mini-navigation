@@ -298,7 +298,7 @@ const mainLocations = [
         ]
       },
       {
-        "title": "Особые локации",
+        "title": "Общие локации",
         "islands": [
           {"title": "Архипелаг Альферац", "link": "https://vk.com/topic-36291248_40449644"},
           {"title": "Сабаоди", "link": "https://vk.com/page-36291248_49183470"},
@@ -333,6 +333,20 @@ const mainLocations = [
         ]
       }
     ],
+  },
+  {
+    title: 'Гранд лайн: новый мир',
+    ways: [
+      {
+        "title": "Первый путь", 
+        "islands": [
+          {"title": "Аква-лорд", "link": "https://vk.com/topic-36291248_32959354"},
+          {"title": "Империалы", "link": "https://vk.com/topic-36291248_32959367"},
+          {"title": "Синопсис", "link": "https://vk.com/topic-36291248_32959376"},
+          {"title": "Верхизис", "link": "https://vk.com/topic-36291248_39573325"},
+        ]
+      }
+    ]
   }
 ]
 
@@ -345,7 +359,10 @@ export const Home = ({ id, fetchedUser }) => {
   const [currentWay, setCurrentWay] = useState(null);
   const [activeModal, setActiveModal] = useState(null);
   const [currentIsland, setCurrentIsland] = useState(null);
-  console.log(mainLocations[0].ways[0]);
+  const [currentOthersWay, setCurrentOthersWay] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
 
   const seaTitle = (
     <div className="fourSeasTitles">
@@ -366,7 +383,7 @@ export const Home = ({ id, fetchedUser }) => {
   const fourSeasMobile = mainLocations[0].ways.map((sea) => 
     <div key={sea.title} className={`mobileSea ${currentSea?.title === sea.title ? 'mobileSeaActive' : ''}`}>
       <div className="seaTitle" 
-        style={{fontSize: '24px', textAlign: 'center', justifyContent: 'center !important'}}
+        style={{textAlign: 'center', justifyContent: 'center !important'}}
         onClick={() => {
           if (currentSea?.title === sea.title) {
             setCurrentSea(null);
@@ -413,7 +430,7 @@ export const Home = ({ id, fetchedUser }) => {
   const grandLineMobile = mainLocations[2].ways.map((way) => 
     <div key={way.title} className={`mobileSea ${currentWay?.title === way.title ? 'mobileSeaActive' : ''}`}>
       <div className="seaTitle" 
-        style={{fontSize: '24px', textAlign: 'center', justifyContent: 'center !important'}}
+        style={{textAlign: 'center', justifyContent: 'center !important'}}
         onClick={() => {
           console.log(way);
           if (way.modal) {
@@ -431,9 +448,215 @@ export const Home = ({ id, fetchedUser }) => {
       >{way.title}</div>
     </div>
   )
+
+  const othersLocations = mainLocations[2].ways.slice(7).map((way) => 
+    <div key={way.title}>
+      <div style={{display: 'flex', flexWrap: 'wrap', justifyContent: 'center'}}>
+        {way.islands.map((island) => 
+          island.modal ? (
+            <div 
+              key={island.title} 
+              className="islandCard othersCard" 
+              onClick={() => {
+                setCurrentIsland(island);
+                setActiveModal('island-modal');
+              }}
+              style={{cursor: 'pointer'}}
+            >
+              {island.title}
+            </div>
+          ) : (
+            <a className="islandCard othersCard" key={island.title} href={island.link} target="_blank">{island.title}</a>
+          )
+        )}
+      </div>
+    </div>
+  )
+
+  // Функция поиска по всем островам
+  const searchIslands = (query) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      setShowSearchResults(false);
+      return;
+    }
+
+    const results = [];
+    const searchLower = query.toLowerCase();
+
+    // Поиск по четырем морям
+    mainLocations[0].ways.forEach((sea) => {
+      sea.islands.forEach((island) => {
+        if (island.title.toLowerCase().includes(searchLower)) {
+          results.push({
+            ...island,
+            location: sea.title,
+            type: 'sea'
+          });
+        }
+      });
+    });
+
+    // Поиск по Grand Line
+    mainLocations[2].ways.forEach((way) => {
+      way.islands.forEach((island) => {
+        if (island.title.toLowerCase().includes(searchLower)) {
+          results.push({
+            ...island,
+            location: way.title,
+            type: 'grand-line'
+          });
+        }
+      });
+    });
+
+    // Поиск по названиям путей (ways)
+    mainLocations.forEach((location) => {
+      if (location.ways) {
+        location.ways.forEach((way) => {
+          if (way.title.toLowerCase().includes(searchLower)) {
+            results.push({
+              title: way.title,
+              location: location.title,
+              type: 'way',
+              way: way
+            });
+          }
+        });
+      }
+    });
+
+    // Поиск по дочерним элементам (childrens) всех локаций
+    mainLocations.forEach((location) => {
+      if (location.ways) {
+        location.ways.forEach((way) => {
+          way.islands.forEach((island) => {
+            if (island.childrens) {
+              island.childrens.forEach((child) => {
+                if (child.title.toLowerCase().includes(searchLower)) {
+                  results.push({
+                    ...child,
+                    parentIsland: island.title,
+                    location: way.title,
+                    type: 'child'
+                  });
+                }
+              });
+            }
+          });
+        });
+      }
+    });
+
+    setSearchResults(results);
+    setShowSearchResults(true);
+  };
+
+  // Обработчик клика по результату поиска
+  const handleSearchResultClick = (result) => {
+    if (result.type === 'way') {
+      // Для путей показываем все острова в модальном окне
+      setCurrentIsland({
+        title: result.title,
+        childrens: result.way.islands
+      });
+      setActiveModal('island-modal');
+    } else if (result.type === 'child') {
+      // Дочерние элементы всегда открываются по ссылке
+      window.open(result.link, '_blank');
+    } else if (result.modal) {
+      // Основные острова с модальными окнами
+      setCurrentIsland(result);
+      setActiveModal('island-modal');
+    } else {
+      // Обычные острова
+      window.open(result.link, '_blank');
+    }
+    setShowSearchResults(false);
+    setSearchQuery('');
+  };
+
+  // Закрытие результатов поиска при клике вне поля
+  const handleClickOutside = () => {
+    setTimeout(() => {
+      setShowSearchResults(false);
+    }, 200);
+  };
   
   return (
     <Panel id={id}>
+      <Group>
+        <Div>
+          {/* Поиск по островам */}
+          <div>
+            <input
+              type="text"
+              placeholder="Поиск по островам..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                searchIslands(e.target.value);
+              }}
+              onBlur={handleClickOutside}
+              style={{
+                width: '100%',
+                padding: '12px',
+                fontSize: '16px',
+                border: '2px solid #ddd',
+                borderRadius: '8px',
+                outline: 'none'
+              }}
+            />
+            {showSearchResults && searchResults.length > 0 && (
+              <div style={{
+                position: 'absolute',
+                top: '100%',
+                left: 0,
+                right: 0,
+                backgroundColor: 'white',
+                border: '2px solid #ddd',
+                borderRadius: '8px',
+                maxHeight: '300px',
+                overflowY: 'auto',
+                zIndex: 1000,
+                boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+              }}>
+                {searchResults.map((result, index) => (
+                  <div
+                    key={`${result.title}-${index}`}
+                    onClick={() => handleSearchResultClick(result)}
+                    style={{
+                      padding: '12px',
+                      borderBottom: '1px solid #eee',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                  >
+                    <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start'}}>
+                      <span style={{fontWeight: 'bold'}}>{result.title}</span>
+                      {result.type === 'child' && (
+                        <span style={{fontSize: '11px', color: '#888', fontStyle: 'italic'}}>
+                          {result.parentIsland}
+                        </span>
+                      )}
+                      {result.type === 'way' && (
+                        <span style={{fontSize: '11px', color: '#0066cc', fontStyle: 'italic'}}>
+                          Путь
+                        </span>
+                      )}
+                    </div>
+                    <span style={{fontSize: '12px', color: '#666'}}>{result.location}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </Div>
+      </Group>
       <Group>
         <Div>
           <div className='fourSeasHeader'><div className='fourSeasHeaderText seas'>{mainLocations[0].title}</div></div>
@@ -496,6 +719,7 @@ export const Home = ({ id, fetchedUser }) => {
             <div className="fourSeasGrid">
               {firstHalf}
             </div>
+            <div className="blue-line"></div>
           </div>
           <div className="mobile-only mobileFourSeas">
             {grandLineMobile}
@@ -523,7 +747,6 @@ export const Home = ({ id, fetchedUser }) => {
               </div>
             </div>
           </div>
-          <div className="blue-line"></div>
           <div className="destop-only">
             {grandLineTitleSecondHalf}
             <div className="blue-line"></div>
@@ -531,7 +754,15 @@ export const Home = ({ id, fetchedUser }) => {
               {secondHalf}
             </div>
           </div>
-          <div className="purple-line"></div>
+          {/* <div className="purple-line"></div> */}
+          <div className="destop-only">
+            <div className="othersHeader">
+              <div className="fourSeasHeaderText heaven">Остальные</div>
+            </div>
+            <div className="othersGrid secondHalf">
+              {othersLocations}
+            </div>
+          </div>
         </Div>
       </Group>
       
@@ -541,7 +772,7 @@ export const Home = ({ id, fetchedUser }) => {
           header={currentSea?.title}
           onClose={() => setActiveModal(null)}
         >
-          <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
+          <div style={{display: 'flex', flexDirection: 'column', padding: '8px 0'}}>
             {currentSea?.islands.map((island) => (
               island.modal ? (
                 <div 
@@ -575,7 +806,7 @@ export const Home = ({ id, fetchedUser }) => {
           header={currentWay?.title}
           onClose={() => setActiveModal(null)}
         >
-          <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
+          <div style={{display: 'flex', flexDirection: 'column', padding: '8px 0'}}>
             {currentWay?.islands.map((island) => (
               island.modal ? (
                 <div 
@@ -585,7 +816,7 @@ export const Home = ({ id, fetchedUser }) => {
                     setCurrentIsland(island);
                     setActiveModal('island-modal');
                   }}
-                  style={{cursor: 'pointer'}}
+                  style={{cursor: 'pointer', margin: '8px 0'}}
                 >
                   {island.title}
                 </div>
@@ -609,18 +840,24 @@ export const Home = ({ id, fetchedUser }) => {
           header={currentIsland?.title}
           onClose={() => setActiveModal(null)}
         >
-          <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
-            {currentIsland?.childrens?.map((child) => (
-              <a 
-                className="islandCard" 
-                key={child.title} 
-                href={child.link} 
-                target="_blank"
-                style={{textDecoration: 'none', color: 'inherit'}}
-              >
-                {child.title}
-              </a>
-            ))}
+          <div style={{display: 'flex', flexDirection: 'column', padding: '8px 0'}}>
+            {currentIsland?.childrens && currentIsland.childrens.length > 0 ? (
+              currentIsland.childrens.map((child) => (
+                <a 
+                  className="islandCard" 
+                  key={child.title} 
+                  href={child.link} 
+                  target="_blank"
+                  style={{textDecoration: 'none', color: 'inherit', margin: '8px 0'}}
+                >
+                  {child.title}
+                </a>
+              ))
+            ) : (
+              <div style={{textAlign: 'center', color: '#666', padding: '20px'}}>
+                Нет доступных островов
+              </div>
+            )}
           </div>
         </ModalCard>
       </ModalRoot>
