@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Panel, PanelHeader, Header, Button, Group, Cell, Div, Avatar, Accordion, ModalCard, ModalRoot } from '@vkontakte/vkui';
 import { useRouteNavigator } from '@vkontakte/vk-mini-apps-router';
 
@@ -334,20 +334,20 @@ const mainLocations = [
       }
     ],
   },
-  {
-    title: 'Гранд лайн: новый мир',
-    ways: [
-      {
-        "title": "Первый путь", 
-        "islands": [
-          {"title": "Аква-лорд", "link": "https://vk.com/topic-36291248_32959354"},
-          {"title": "Империалы", "link": "https://vk.com/topic-36291248_32959367"},
-          {"title": "Синопсис", "link": "https://vk.com/topic-36291248_32959376"},
-          {"title": "Верхизис", "link": "https://vk.com/topic-36291248_39573325"},
-        ]
-      }
-    ]
-  }
+  // {
+  //   title: 'Гранд лайн: новый мир',
+  //   ways: [
+  //     {
+  //       "title": "Первый путь", 
+  //       "islands": [
+  //         {"title": "Аква-лорд", "link": "https://vk.com/topic-36291248_32959354"},
+  //         {"title": "Империалы", "link": "https://vk.com/topic-36291248_32959367"},
+  //         {"title": "Синопсис", "link": "https://vk.com/topic-36291248_32959376"},
+  //         {"title": "Верхизис", "link": "https://vk.com/topic-36291248_39573325"},
+  //       ]
+  //     }
+  //   ]
+  // }
 ]
 
 
@@ -363,6 +363,21 @@ export const Home = ({ id, fetchedUser }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
+
+  const seaDetailsRef = useRef(null);
+  const wayDetailsRef = useRef(null);
+
+  useEffect(() => {
+    if (currentSea && seaDetailsRef.current) {
+      seaDetailsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [currentSea]);
+
+  useEffect(() => {
+    if (currentWay && wayDetailsRef.current) {
+      wayDetailsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [currentWay]);
 
   const seaTitle = (
     <div className="fourSeasTitles">
@@ -432,9 +447,7 @@ export const Home = ({ id, fetchedUser }) => {
       <div className="seaTitle" 
         style={{textAlign: 'center', justifyContent: 'center !important'}}
         onClick={() => {
-          console.log(way);
           if (way.modal) {
-            console.log(way);
             setActiveModal('way-modal');
             setCurrentWay(way);
           } else {
@@ -554,6 +567,12 @@ export const Home = ({ id, fetchedUser }) => {
 
   // Обработчик клика по результату поиска
   const handleSearchResultClick = (result) => {
+    setCurrentIsland(null);
+    setCurrentWay(null);
+    setCurrentSea(null);
+    setActiveModal(null);
+
+    
     if (result.type === 'way') {
       // Для путей показываем все острова в модальном окне
       setCurrentIsland({
@@ -588,7 +607,7 @@ export const Home = ({ id, fetchedUser }) => {
       <Group>
         <Div>
           {/* Поиск по островам */}
-          <div>
+          <div style={{padding: '12px', position: 'relative'}}>
             <input
               type="text"
               placeholder="Поиск по островам..."
@@ -637,7 +656,7 @@ export const Home = ({ id, fetchedUser }) => {
                     onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
                   >
                     <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start'}}>
-                      <span style={{fontWeight: 'bold'}}>{result.title}</span>
+                      <span style={{fontWeight: 'bold', color: 'black'}}>{result.title}</span>
                       {result.type === 'child' && (
                         <span style={{fontSize: '11px', color: '#888', fontStyle: 'italic'}}>
                           {result.parentIsland}
@@ -669,7 +688,7 @@ export const Home = ({ id, fetchedUser }) => {
           <div className="mobile-only mobileFourSeas">
             {fourSeasMobile}
           </div>
-          <div className="mobile-only">
+          <div className="mobile-only" ref={seaDetailsRef}>
             <div>
               <div style={{display: 'flex', flexDirection: 'column'}}>
                 {currentSea?.islands.map((island) => 
@@ -724,7 +743,7 @@ export const Home = ({ id, fetchedUser }) => {
           <div className="mobile-only mobileFourSeas">
             {grandLineMobile}
           </div>
-          <div className="mobile-only">
+          <div className="mobile-only" ref={wayDetailsRef}>
             <div>
               <div style={{display: 'flex', flexDirection: 'column'}}>
                 {currentWay?.islands.map((island) => 
@@ -772,7 +791,7 @@ export const Home = ({ id, fetchedUser }) => {
           header={currentSea?.title}
           onClose={() => setActiveModal(null)}
         >
-          <div style={{display: 'flex', flexDirection: 'column', padding: '8px 0'}}>
+          <div style={{display: 'flex', flexDirection: 'column', padding: '8px 0', maxHeight: '70vh', overflowY: 'auto', WebkitOverflowScrolling: 'touch'}}>
             {currentSea?.islands.map((island) => (
               island.modal ? (
                 <div 
@@ -806,7 +825,7 @@ export const Home = ({ id, fetchedUser }) => {
           header={currentWay?.title}
           onClose={() => setActiveModal(null)}
         >
-          <div style={{display: 'flex', flexDirection: 'column', padding: '8px 0'}}>
+          <div style={{display: 'flex', flexDirection: 'column', padding: '8px 0', maxHeight: '70vh', overflowY: 'auto', WebkitOverflowScrolling: 'touch'}}>
             {currentWay?.islands.map((island) => (
               island.modal ? (
                 <div 
@@ -840,7 +859,7 @@ export const Home = ({ id, fetchedUser }) => {
           header={currentIsland?.title}
           onClose={() => setActiveModal(null)}
         >
-          <div style={{display: 'flex', flexDirection: 'column', padding: '8px 0'}}>
+          <div style={{display: 'flex', flexDirection: 'column', padding: '8px 0', maxHeight: '70vh', overflowY: 'auto', WebkitOverflowScrolling: 'touch'}}>
             {currentIsland?.childrens && currentIsland.childrens.length > 0 ? (
               currentIsland.childrens.map((child) => (
                 <a 

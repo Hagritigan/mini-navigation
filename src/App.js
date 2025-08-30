@@ -16,7 +16,6 @@ export const App = () => {
       <SplitCol>
         <View activePanel={activePanel}>
           <Home id="home"/>
-          <Persik id="persik" />
         </View>
       </SplitCol>
     </SplitLayout>
